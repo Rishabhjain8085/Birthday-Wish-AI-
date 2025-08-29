@@ -12,6 +12,12 @@ Create magical, personalized birthday videos with AI-powered scenes, effects, an
 - 🪄 AI-powered video generation (with fallback to animated canvas video)
 - 📥 Download your generated video
 
+## 🎬 Demo
+
+See the Birthday Video Generator in action:
+
+![Birthday Video Demo](demo.gif)
+
 ![WhatsApp Image 2025-08-30 at 00 52 31_f5b78e1e](https://github.com/user-attachments/assets/dbdd94ad-b5e1-4a58-989c-c975f7194760)
 
 ## How to Use
