@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Video Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ffd700, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .main-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .scene-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .scene-option {
+            position: relative;
+            cursor: pointer;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .scene-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .scene-option.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .scene-option input[type="radio"] {
+            display: none;
+        }
+
+        .scene-card {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .scene-card.beach { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .scene-card.garden { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); }
+        .scene-card.party { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); }
+        .scene-card.sunset { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .lang-btn {
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .video-result {
+            display: none;
+            text-align: center;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .video-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .video-container video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(72, 187, 120, 0.4);
+        }
+
+        .effects-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .effect-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .effect-toggle:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .effect-toggle input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .balloon-animation {
+            position: fixed;
+            top: -50px;
+            font-size: 30px;
+            animation: balloon-float 8s linear infinite;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        @keyframes balloon-float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .form-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .main-card {
+                padding: 25px;
+                margin: 15px;
+            }
+            
+            .scene-selector {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #c53030;
+            display: none;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2d7738;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2d7738;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Birthday Video Generator</h1>
+            <p>Create magical personalized birthday videos with AI-powered scenes, effects, and music!</p>
+        </div>
+
+        <div class="main-card">
+            <div class="language-selector">
+                <button class="lang-btn active" onclick="setLanguage('hinglish', this)">Hinglish</button>
+                <button class="lang-btn" onclick="setLanguage('english', this)">English</button>
+                <button class="lang-btn" onclick="setLanguage('hindi', this)">Hindi</button>
+            </div>
+
+            <div class="api-status" id="apiStatus" style="display: none;">
+                <div class="status-message" style="background: #e6f3ff; color: #0066cc; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #0066cc;">
+                    <strong>🔧 API Status:</strong> <span id="statusText">Checking...</span>
+                    <div id="statusDetails" style="margin-top: 10px; font-size: 0.9rem;"></div>
+                </div>
+            </div>
+
+            <form id="birthdayForm">
+                <div class="form-section">
+                    <div class="input-group">
+                        <label for="recipientName">Birthday Person's Name</label>
+                        <input type="text" id="recipientName" name="recipientName" placeholder="Enter name..." required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="senderName">Your Name</label>
+                        <input type="text" id="senderName" name="senderName" placeholder="Your name...">
+                    </div>
+                    
+                    <div class="input-group full-width">
+                        <label for="customWish">Custom Birthday Message</label>
+                        <textarea id="customWish" name="customWish" placeholder="Enter your heartfelt birthday message..."></textarea>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Choose Scene</label>
+                    <div class="scene-selector">
+                        <label class="scene-option selected">
+                            <input type="radio" name="scene" value="party" checked>
+                            <div class="scene-card party">
+                                🎊 Party Scene
+                                <div style="font-size: 0.8rem; margin-top: 5px;">Colorful party with balloons & confetti</div>
+                            </div>
+                        </label>
+                        
+                        <label class="scene-option">
+                            <input type="radio" name="scene" value="garden">
+                            <div class="scene-card garden">
+                                🌸 Garden Scene
+                                <div style="font-size: 0.8rem; margin-top: 5px;">Beautiful garden with flowers</div>
+                            </div>
+                        </label>
+                        
+                        <label class="scene-option">
+                            <input type="radio" name="scene" value="beach">
+                            <div class="scene-card beach">
+                                🏖️ Beach Scene
+                                <div style="font-size: 0.8rem; margin-top: 5px;">Sunset beach celebration</div>
+                            </div>
+                        </label>
+                        
+                        <label class="scene-option">
+                            <input type="radio" name="scene" value="sunset">
+                            <div class="scene-card sunset">
+                                🌅 Sunset Scene
+                                <div style="font-size: 0.8rem; margin-top: 5px;">Magical sunset backdrop</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Video Effects</label>
+                    <div class="effects-controls">
+                        <label class="effect-toggle">
+                            <input type="checkbox" name="effects" value="balloons" checked>
+                            <span>🎈 Floating Balloons</span>
+                        </label>
+                        
+                        <label class="effect-toggle">
+                            <input type="checkbox" name="effects" value="confetti" checked>
+                            <span>🎊 Confetti Rain</span>
+                        </label>
+                        
+                        <label class="effect-toggle">
+                            <input type="checkbox" name="effects" value="fireworks">
+                            <span>🎆 Fireworks</span>
+                        </label>
+                        
+                        <label class="effect-toggle">
+                            <input type="checkbox" name="effects" value="music" checked>
+                            <span>🎵 Background Music</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <button type="submit" class="generate-btn" id="generateBtn">
+                    Generate Birthday Video ✨
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Creating your magical birthday video... This may take a few moments!</p>
+            </div>
+        </div>
+
+        <div class="video-result" id="videoResult">
+            <h3 style="margin-bottom: 20px; color: #4a5568;">🎉 Your Birthday Video is Ready!</h3>
+            <div class="video-container">
+                <video id="generatedVideo" controls></video>
+            </div>
+            <button class="download-btn" onclick="downloadVideo()">
+                📥 Download Video
+            </button>
+            <button class="download-btn" onclick="createNew()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                ✨ Create Another Video
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentLanguage = 'hinglish';
+        let generatedVideoBlob = null;
+            const GEMINI_API_KEY = 'AIzaSyALaBDK-vauBQmCzPx0jXX3OOkZNO3xEl4';
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Language templates
+        const templates = {
+            hinglish: {
+                defaultWish: "Happy Birthday {name}! 🎉 Tumhara yeh special din bahut khushi aur pyaar se bhara ho. May all your dreams come true! Have a wonderful celebration! 🎂✨",
+                greeting: "Janamdin ki bahut bahut shubhkamnayein"
+            },
+            english: {
+                defaultWish: "Happy Birthday {name}! 🎉 Wishing you a day filled with happiness and a year filled with joy. May all your dreams and wishes come true! 🎂✨",
+                greeting: "Happy Birthday"
+            },
+            hindi: {
+                defaultWish: "जन्मदिन मुबारक {name}! 🎉 आपका यह विशेष दिन खुशियों से भरा हो। आपकी सभी मनोकामनाएं पूर्ण हों! 🎂✨",
+                greeting: "जन्मदिन की शुभकामनाएं"
+            }
+        };
+
+        function setLanguage(lang, element = null) {
+            console.log('setLanguage called with:', lang, element);
+            currentLanguage = lang;
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            if (element) {
+                element.classList.add('active');
+            } else {
+                // Fallback: find button by onclick attribute
+                const buttons = document.querySelectorAll('.lang-btn');
+                buttons.forEach(btn => {
+                    if (btn.textContent.toLowerCase().includes(lang)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            // Update placeholder text
+            const wishTextarea = document.getElementById('customWish');
+            const recipientNameInput = document.getElementById('recipientName');
+            
+            if (wishTextarea && recipientNameInput) {
+                const name = recipientNameInput.value || '{name}';
+                wishTextarea.placeholder = templates[lang].defaultWish.replace('{name}', name);
+            }
+            
+            console.log('Language set to:', currentLanguage);
+        }
+
+        // Update placeholder when name changes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('recipientName').addEventListener('input', function() {
+                const name = this.value || '{name}';
+                const wishTextarea = document.getElementById('customWish');
+                wishTextarea.placeholder = templates[currentLanguage].defaultWish.replace('{name}', name);
+            });
+        });
+
+        // Scene selection handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[name="scene"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.scene-option').forEach(option => {
+                        option.classList.remove('selected');
+                    });
+                    this.closest('.scene-option').classList.add('selected');
+                });
+            });
+        });
+
+        // Balloon animation
+        function createBalloons() {
+                const colors = ['🎈', '🎀', '🎊', '��'];
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon-animation';
+                    balloon.innerHTML = colors[Math.floor(Math.random() * colors.length)];
+                    balloon.style.left = Math.random() * 100 + '%';
+                    document.body.appendChild(balloon);
+                    
+                    setTimeout(() => {
+                        balloon.remove();
+                    }, 8000);
+                }, i * 1000);
+            }
+        }
+
+        // Show message functions
+        function showError(message) {
+            console.log('Showing error:', message);
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+            }
+            const successDiv = document.getElementById('successMessage');
+            if (successDiv) {
+                successDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            console.log('Showing success:', message);
+            const successDiv = document.getElementById('successMessage');
+            if (successDiv) {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+            }
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Main form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up form submission');
+            
+            const form = document.getElementById('birthdayForm');
+            if (!form) {
+                console.error('Form not found!');
+                return;
+            }
+            
+            form.addEventListener('submit', async function(e) {
+                console.log('Form submission started');
+                e.preventDefault();
+                
+                try {
+                    const formData = new FormData(this);
+                    const recipientName = formData.get('recipientName');
+                    const senderName = formData.get('senderName');
+                    const customWish = formData.get('customWish');
+                    const scene = formData.get('scene');
+                    const effects = formData.getAll('effects');
+                    
+                    console.log('Form data:', {
+                        recipientName,
+                        senderName,
+                        customWish,
+                        scene,
+                        effects,
+                        language: currentLanguage
+                    });
+                    
+                    if (!recipientName || !recipientName.trim()) {
+                        showError('Please enter the birthday person\'s name!');
+                        return;
+                    }
+
+                    // Show loading
+                    const generateBtn = document.getElementById('generateBtn');
+                    const loading = document.getElementById('loading');
+                    const videoResult = document.getElementById('videoResult');
+                    
+                    if (generateBtn) generateBtn.disabled = true;
+                    if (loading) loading.style.display = 'block';
+                    if (videoResult) videoResult.style.display = 'none';
+                    
+                    console.log('Starting video generation...');
+
+                    // Create balloon effect
+                    createBalloons();
+
+                    const videoUrl = await generateVideo({
+                        recipientName,
+                        senderName,
+                        customWish: customWish || templates[currentLanguage].defaultWish.replace('{name}', recipientName),
+                        scene,
+                        effects,
+                        language: currentLanguage
+                    });
+
+                    console.log('Video generated successfully:', videoUrl);
+
+                    // Show result
+                    if (loading) loading.style.display = 'none';
+                    if (videoResult) videoResult.style.display = 'block';
+                    
+                    const video = document.getElementById('generatedVideo');
+                    if (video) video.src = videoUrl;
+                    
+                    showSuccess('Your birthday video has been generated successfully! 🎉');
+                    
+                } catch (error) {
+                    console.error('Error in form submission:', error);
+                    const loading = document.getElementById('loading');
+                    if (loading) loading.style.display = 'none';
+                    showError('Sorry, there was an error generating your video. Please try again!');
+                } finally {
+                    const generateBtn = document.getElementById('generateBtn');
+                    if (generateBtn) generateBtn.disabled = false;
+                }
+            });
+        });
+
+        async function generateVideo(params) {
+            console.log('generateVideo called with params:', params);
+            
+            const { recipientName, senderName, customWish, scene, effects, language } = params;
+            
+                try {
+                    // Try Gemini API first
+                    const videoUrl = await generateVideoWithGemini(params);
+                    return videoUrl;
+                } catch (error) {
+                    console.error('Gemini API error:', error);
+                    // Fallback to canvas-based video
+                    return await createFallbackVideo(params);
+                }
+            }
+
+                        async function generateVideoWithGemini(params) {
+                console.log('Generating video with AI APIs...');
+                
+                const { recipientName, senderName, customWish, scene, effects, language } = params;
+                
+                // Create detailed prompt for video generation
+                const sceneDescriptions = {
+                    party: "vibrant birthday party room with colorful decorations, balloons, streamers, confetti, and festive lighting",
+                    garden: "beautiful garden with blooming flowers, green plants, butterflies, and natural sunlight",
+                    beach: "serene beach at sunset with golden sand, gentle waves, palm trees, and warm orange sky",
+                    sunset: "magical sunset scene with warm golden light, peaceful atmosphere, and scenic mountain background"
+                };
+                
+                const effectsText = effects.length > 0 ? `Include these effects: ${effects.join(', ')}` : '';
+                
+                const prompt = `Create a beautiful, high-quality birthday video in ${sceneDescriptions[scene]}. 
+                              The video should feature:
+                              - Text overlay: "Happy Birthday ${recipientName}!" in elegant, celebratory font
+                              ${senderName ? `- From: ${senderName}` : ''}
+                              - Message: "${customWish}"
+                              - ${effectsText}
+                              - Style: Cheerful, celebratory, cinematic quality, warm and joyful atmosphere
+                              - Duration: 10-15 seconds with smooth animations and transitions
+                              - High resolution and professional quality suitable for social media sharing
+                              - Include birthday cake, candles, and celebration elements
+                              - Add subtle particle effects and smooth camera movements`;
+
+                console.log('AI API prompt:', prompt);
+
+                // Try multiple API endpoints
+                const apiEndpoints = [
+                    {
+                        name: 'Veo 3',
+                        url: `https://generativelanguage.googleapis.com/v1beta/models/veo-3:generateContent?key=${GEMINI_API_KEY}`,
+                        model: 'veo-3'
+                    },
+                    {
+                        name: 'Gemini 1.5 Flash',
+                        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+                        model: 'gemini-1.5-flash'
+                    },
+                    {
+                        name: 'Gemini 1.5 Pro',
+                        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`,
+                        model: 'gemini-1.5-pro'
+                    }
+                ];
+
+                for (const endpoint of apiEndpoints) {
+                    try {
+                        console.log(`Trying ${endpoint.name} API...`);
+                        
+                        const response = await fetch(endpoint.url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: prompt
+                                    }]
+                                }],
+                                generationConfig: {
+                                    temperature: 0.7,
+                                    topK: 40,
+                                    topP: 0.95,
+                                    maxOutputTokens: 4096,
+                                }
+                            })
+                        });
+
+                        console.log(`${endpoint.name} API response status:`, response.status);
+                        console.log(`${endpoint.name} API response headers:`, response.headers);
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error(`${endpoint.name} API error response:`, errorText);
+                            
+                            // If it's a 403 (API not enabled), try the next endpoint
+                            if (response.status === 403) {
+                                console.log(`${endpoint.name} API not enabled, trying next endpoint...`);
+                                continue;
+                            }
+                            
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        console.log(`${endpoint.name} API full response:`, JSON.stringify(data, null, 2));
+
+                        // Check if we got video content
+                        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                            const content = data.candidates[0].content;
+                            console.log(`Processing ${endpoint.name} content:`, content);
+                            
+                            // Look for video data in the response
+                            if (content.parts && content.parts.length > 0) {
+                                for (const part of content.parts) {
+                                    console.log('Processing part:', part);
+                                    if (part.inlineData && part.inlineData.mimeType && part.inlineData.mimeType.startsWith('video/')) {
+                                        console.log('Found video data:', part.inlineData);
+                                        // Convert base64 video data to blob
+                                        const videoData = atob(part.inlineData.data);
+                                        const videoArray = new Uint8Array(videoData.length);
+                                        for (let i = 0; i < videoData.length; i++) {
+                                            videoArray[i] = videoData.charCodeAt(i);
+                                        }
+                                        
+                                        const videoBlob = new Blob([videoArray], { type: part.inlineData.mimeType });
+                                        generatedVideoBlob = videoBlob;
+                                        const videoUrl = URL.createObjectURL(videoBlob);
+                                        console.log(`Video generated successfully with ${endpoint.name}:`, videoUrl);
+                                        return videoUrl;
+                                    }
+                                }
+                            }
+                            
+                            // If no video found in parts, check for other video-related data
+                            if (data.videoData) {
+                                console.log('Found videoData in response');
+                                const videoBlob = new Blob([data.videoData], { type: 'video/mp4' });
+                                generatedVideoBlob = videoBlob;
+                                const videoUrl = URL.createObjectURL(videoBlob);
+                                console.log(`Video generated successfully with ${endpoint.name}:`, videoUrl);
+                                return videoUrl;
+                            }
+
+                            // Check for any other video-related fields
+                            if (data.video) {
+                                console.log('Found video field in response');
+                                // Handle video field
+                            }
+
+                            if (data.media) {
+                                console.log('Found media field in response');
+                                // Handle media field
+                            }
+                        }
+
+                        // If no video content found, try alternative approaches
+                        console.log(`No video content found in ${endpoint.name} response, trying alternatives...`);
+                        
+                        // Try to extract any binary data that might be video
+                        if (data.binaryData) {
+                            console.log('Found binaryData, attempting to process as video');
+                            try {
+                                const videoBlob = new Blob([data.binaryData], { type: 'video/mp4' });
+                                generatedVideoBlob = videoBlob;
+                                const videoUrl = URL.createObjectURL(videoBlob);
+                                console.log(`Video generated from binaryData with ${endpoint.name}:`, videoUrl);
+                                return videoUrl;
+                            } catch (e) {
+                                console.error('Error processing binaryData:', e);
+                            }
+                        }
+
+                        // If this endpoint didn't work, try the next one
+                        console.log(`${endpoint.name} didn't return video, trying next endpoint...`);
+                        continue;
+
+                    } catch (error) {
+                        console.error(`${endpoint.name} API error:`, error);
+                        
+                        // If it's a critical error (not just API not enabled), try the next endpoint
+                        if (error.message.includes('403') || error.message.includes('PERMISSION_DENIED')) {
+                            console.log(`${endpoint.name} API access denied, trying next endpoint...`);
+                            continue;
+                        }
+                        
+                        // For other errors, try the next endpoint
+                        continue;
+                    }
+                }
+
+                // If all endpoints failed, throw error to use fallback
+                throw new Error('All AI API endpoints failed - using canvas fallback');
+            }
+
+            function createFallbackVideo(params) {
+                console.log('Creating fallback video for:', params.recipientName);
+                
+                return new Promise((resolve) => {
+                    // Create a simple animated video using canvas
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 1280;
+                    canvas.height = 720;
+                    
+                    // Scene backgrounds
+                    const sceneColors = {
+                        party: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
+                        garden: ['#00B894', '#00CEFF', '#FDCB6E', '#6C5CE7', '#A29BFE'],
+                        beach: ['#FF7675', '#FDCB6E', '#E17055', '#00B894', '#00CEFF'],
+                        sunset: ['#FF7675', '#FDCB6E', '#E17055', '#FD79A8', '#FDCB6E']
+                    };
+                    
+                    let frameCount = 0;
+                    const totalFrames = 150; // 5 seconds at 30fps
+                    
+                    // Create canvas stream for recording
+                    const stream = canvas.captureStream(30);
+                    const mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'video/webm;codecs=vp9'
+                    });
+                    
+                    const chunks = [];
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            chunks.push(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: 'video/webm' });
+                            generatedVideoBlob = blob;
+                            const url = URL.createObjectURL(blob);
+                            resolve(url);
+                    };
+                    
+                    // Start recording
+                    mediaRecorder.start();
+                    
+                    function drawFrame() {
+                            const progress = frameCount / totalFrames;
+                            
+                            // Create animated gradient background
+                            const colors = sceneColors[params.scene] || sceneColors.party;
+                            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                            
+                            for (let i = 0; i < colors.length; i++) {
+                                const offset = (i / (colors.length - 1) + progress * 0.1) % 1;
+                                gradient.addColorStop(offset, colors[i]);
+                            }
+                            
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Add floating particles/effects
+                            if (params.effects.includes('balloons')) {
+                                drawBalloons(ctx, progress);
+                            }
+                            
+                            if (params.effects.includes('confetti')) {
+                                drawConfetti(ctx, progress);
+                            }
+                            
+                            if (params.effects.includes('fireworks')) {
+                                drawFireworks(ctx, progress);
+                            }
+                            
+                            // Main title animation
+                            ctx.save();
+                            const scale = 1 + Math.sin(progress * Math.PI * 4) * 0.1;
+                            ctx.translate(canvas.width / 2, canvas.height / 2 - 100);
+                            ctx.scale(scale, scale);
+                            
+                            // Happy Birthday text
+                            ctx.fillStyle = 'white';
+                            ctx.strokeStyle = '#2D3748';
+                            ctx.lineWidth = 4;
+                            ctx.font = 'bold 72px Arial';
+                            ctx.textAlign = 'center';
+                            
+                            const text1 = templates[params.language]?.greeting || 'Happy Birthday';
+                            ctx.strokeText(text1, 0, 0);
+                            ctx.fillText(text1, 0, 0);
+                            
+                            // Name text
+                            ctx.font = 'bold 84px Arial';
+                            const gradient2 = ctx.createLinearGradient(-200, -50, 200, 50);
+                            gradient2.addColorStop(0, '#FFD700');
+                            gradient2.addColorStop(0.5, '#FF6B6B');
+                            gradient2.addColorStop(1, '#4ECDC4');
+                            ctx.fillStyle = gradient2;
+                            
+                            ctx.strokeText(params.recipientName, 0, 100);
+                            ctx.fillText(params.recipientName, 0, 100);
+                            
+                            ctx.restore();
+                            
+                            // Custom message (after 2 seconds)
+                            if (params.customWish && frameCount > 60) {
+                                ctx.fillStyle = 'white';
+                                ctx.font = 'bold 28px Arial';
+                                ctx.textAlign = 'center';
+                                
+                                const lines = wrapText(ctx, params.customWish, canvas.width - 200);
+                                lines.forEach((line, index) => {
+                                    ctx.strokeText(line, canvas.width / 2, canvas.height / 2 + 200 + index * 35);
+                                    ctx.fillText(line, canvas.width / 2, canvas.height / 2 + 200 + index * 35);
+                                });
+                            }
+                            
+                            // From message
+                            if (params.senderName && frameCount > 75) {
+                                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                                ctx.font = 'bold 24px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.fillText(`- From ${params.senderName}`, canvas.width / 2, canvas.height - 80);
+                            }
+                            
+                            frameCount++;
+                            
+                            if (frameCount <= totalFrames) {
+                                requestAnimationFrame(drawFrame);
+                            } else {
+                                mediaRecorder.stop();
+                                stream.getTracks().forEach(track => track.stop());
+                        }
+                    }
+                    
+                    // Start animation
+                    requestAnimationFrame(drawFrame);
+                });
+            }
+
+            // Helper functions for drawing effects
+            function drawBalloons(ctx, progress) {
+                const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 160) + Math.sin(progress * Math.PI * 2 + i) * 20;
+                    const y = 100 + Math.sin(progress * Math.PI * 3 + i) * 30;
+                    const size = 30 + Math.sin(progress * Math.PI * 4 + i) * 10;
+                    
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Balloon string
+                    ctx.strokeStyle = '#2D3748';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + size);
+                    ctx.lineTo(x, y + size + 40);
+                    ctx.stroke();
+                }
+            }
+
+            function drawConfetti(ctx, progress) {
+                const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#FD79A8'];
+                for (let i = 0; i < 50; i++) {
+                    const x = (i * 25) % 1280;
+                    const y = (progress * 720) + (i * 10) % 100;
+                    const size = 3 + Math.sin(progress * Math.PI * 2 + i) * 2;
+                    
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fillRect(x, y, size, size);
+                }
+            }
+
+            function drawFireworks(ctx, progress) {
+                if (progress > 0.3 && progress < 0.7) {
+                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFEAA7'];
+                    for (let i = 0; i < 3; i++) {
+                        const centerX = 200 + i * 400;
+                        const centerY = 200;
+                        const particles = 20;
+                        
+                        for (let j = 0; j < particles; j++) {
+                            const angle = (j / particles) * Math.PI * 2;
+                            const distance = 50 + Math.sin(progress * Math.PI * 4) * 30;
+                            const x = centerX + Math.cos(angle) * distance;
+                            const y = centerY + Math.sin(angle) * distance;
+                            
+                            ctx.fillStyle = colors[i % colors.length];
+                            ctx.fillRect(x, y, 2, 2);
+                        }
+                    }
+                }
+            }
+
+            function wrapText(ctx, text, maxWidth) {
+                const words = text.split(' ');
+                const lines = [];
+                let currentLine = words[0];
+
+                for (let i = 1; i < words.length; i++) {
+                    const word = words[i];
+                    const width = ctx.measureText(currentLine + " " + word).width;
+                    if (width < maxWidth) {
+                        currentLine += " " + word;
+                        } else {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+        }
+
+        function downloadVideo() {
+            if (generatedVideoBlob) {
+                const url = URL.createObjectURL(generatedVideoBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `birthday-video-${Date.now()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function createNew() {
+            document.getElementById('videoResult').style.display = 'none';
+            document.getElementById('birthdayForm').reset();
+            document.querySelectorAll('.scene-option').forEach(option => option.classList.remove('selected'));
+            document.querySelector('.scene-option').classList.add('selected');
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+            // Test Veo 3 API connectivity
+            async function testVeo3API() {
+                console.log('Testing Veo 3 API connectivity...');
+                
+                try {
+                    const testResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/veo-3:generateContent?key=${GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: "Generate a simple 5-second video of a birthday cake with candles"
+                                }]
+                            }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                topK: 40,
+                                topP: 0.95,
+                                maxOutputTokens: 2048,
+                            }
+                        })
+                    });
+
+                    console.log('Test API Response Status:', testResponse.status);
+                    console.log('Test API Response Headers:', testResponse.headers);
+                    
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        console.log('Test API Response Data:', JSON.stringify(testData, null, 2));
+                        console.log('Test API Response Keys:', Object.keys(testData));
+                        
+                        if (testData.candidates && testData.candidates[0]) {
+                            console.log('Test API has candidates');
+                            if (testData.candidates[0].content) {
+                                console.log('Test API candidate content:', testData.candidates[0].content);
+                            }
+                        }
+                        
+                        return true;
+                    } else {
+                        const errorText = await testResponse.text();
+                        console.error('Test API Error:', errorText);
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Test API Exception:', error);
+                    return false;
+                }
+            }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            // Set initial language without relying on event
+            currentLanguage = 'hinglish';
+            document.querySelector('.lang-btn[onclick*="hinglish"]').classList.add('active');
+            
+            // Update placeholder initially
+            const wishTextarea = document.getElementById('customWish');
+            const name = document.getElementById('recipientName').value || '{name}';
+            wishTextarea.placeholder = templates.hinglish.defaultWish.replace('{name}', name);
+                
+                // Test Veo 3 API connectivity on page load
+                setTimeout(() => {
+                    testVeo3API().then(success => {
+                        if (success) {
+                            console.log('✅ Veo 3 API test successful');
+                        } else {
+                            console.log('❌ Veo 3 API test failed');
+                        }
+                    });
+                }, 1000);
+        });
+    </script>
+</body>
+</html>
